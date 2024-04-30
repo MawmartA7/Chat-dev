@@ -1,3 +1,5 @@
+import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+
 // login elements
 const login = document.querySelector(".login");
 const loginForm = login.querySelector(".login__form");
@@ -19,7 +21,7 @@ const colors = [
 ];
 const user = { id: "", name: "", color: "" };
 
-let websocket;
+let socket;
 
 const createMessageSelfElement = (content) => {
   const div = document.createElement("div");
@@ -59,7 +61,7 @@ const scrollScreen = () => {
   });
 };
 
-const processMessage = ({ data }) => {
+const processMessage = (data) => {
   const { userId, userName, userColor, content } = JSON.parse(data);
 
   const message =
@@ -82,9 +84,13 @@ const handleLogin = (event) => {
   login.style.display = "none";
   chat.style.display = "flex";
 
-  websocket = new WebSocket("wss://chat-amart-backend.onrender.com");
-
-  websocket.onmessage = processMessage;
+  socket = io("localhost:8080", {
+    transports: ["websocket"],
+  });
+  socket.on("receive message", (data) => {
+    console.log(data);
+    processMessage(data);
+  });
 };
 
 const sendMessage = (event) => {
@@ -97,7 +103,7 @@ const sendMessage = (event) => {
     content: chatInput.value,
   };
 
-  websocket.send(JSON.stringify(message));
+  socket.emit("message", JSON.stringify(message));
 
   chatInput.value = "";
 };

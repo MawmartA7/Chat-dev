@@ -84,7 +84,7 @@ const handleLogin = (event) => {
   login.style.display = "none";
   chat.style.display = "flex";
 
-  socket = io("localhost:8080", {
+  socket = io("wss://chat-amart-backend.onrender.com", {
     transports: ["websocket"],
   });
   socket.on("receive message", (data) => {

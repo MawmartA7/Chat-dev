@@ -20,7 +20,6 @@ io.on("connection", async (socket) => {
   console.log("client connected");
 
   socket.on("disconnect", async () => {
-    console.log(sockets.length);
     sockets = await io.fetchSockets();
     console.log(sockets.length);
   });

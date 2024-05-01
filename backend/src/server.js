@@ -1,8 +1,9 @@
 const { createServer } = require("http");
-const app = require("express")();
-const server = createServer(app);
+const express = require("express");
+const app = express();
+const httpServer = createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
+const io = new Server(httpServer);
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -10,21 +11,31 @@ dotenv.config();
 let sockets = [];
 
 io.on("connection", async (socket) => {
-  socket.on("error", console.error);
+  console.log(socket.nsp.sockets);
   sockets.push(socket);
+  console.log("client connected");
+  socket.on("self connected", (NewUser) => {
+    sockets.push(NewUser);
+    console.log(sockets);
+
+    socket.emit("update users array", sockets);
+  });
+
+  socket.on("error", console.error);
   socket.on("message", (data) => {
     console.log(data);
     sockets.forEach((client) => client.emit("receive message", data));
   });
-
-  console.log("client connected");
-
   socket.on("disconnect", async () => {
-    sockets = await io.fetchSockets();
-    console.log(sockets.length);
+    try {
+      sockets = await io.fetchSockets();
+      console.log(sockets.length);
+    } catch (error) {
+      console.error(error);
+    }
   });
 });
 
-server.listen(process.env.PORT || 8080, () =>
+httpServer.listen(process.env.PORT || 8080, () =>
   console.log("The server is running.")
 );
